@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sincronía Pro | Omni-Master Full</title>
     
-    <!-- Frameworks -->
+    <!-- Librerías Core -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
     
@@ -89,27 +89,27 @@
 
         // --- SESIONES ---
         const SESSIONS = {
-            reset: { id: 'reset', name: "Reset 15 min", diff: 10, color: "#10b981", type: "Neuro-Reset", desc: "Stanford: Suspiro + NSDR + Alfa." },
+            sigh: { id: 'sigh', name: "Suspiro Fisiológico", diff: 6, color: "#11caa0", type: "Vagal", desc: "Doble inhalación rápida." },
+            reset: { id: 'reset', name: "Reset 15 min", diff: 10, color: "#10b981", type: "Neuro-Reset", desc: "Suspiro + NSDR + Alfa." },
             sleep: { id: 'sleep', name: "Sueño Reparador", diff: 2.5, color: "#6366f1", type: "Delta", desc: "Barajado Cognitivo Activo." },
             pink: { id: 'pink', name: "Sincronía N3", diff: 1.5, color: "#ec4899", type: "N3", desc: "Ruido Rosa + Restauración." },
-            nsdr: { id: 'nsdr', name: "Reset NSDR", diff: 4.0, color: "#0ea5e9", type: "Theta", desc: "Yoga Nidra de descanso." },
-            vagus: { id: 'vagus', name: "Activación Vagal", diff: 6.0, color: "#f59e0b", type: "Alpha-Theta", desc: "Respiración 4-7-8 científica." },
+            vagus: { id: 'vagus', name: "Activación Vagal", diff: 6.0, color: "#f59e0b", type: "Alpha-Theta", desc: "Respiración 4-7-8." },
             focus: { id: 'focus', name: "Foco Profundo", diff: 30, color: "#38bdf8", type: "Gamma", desc: "Máxima agudeza cognitiva." }
         };
 
         const WORDS = ["NUBE", "GATO", "RELOJ", "ESTRELLA", "PUENTE", "VELA", "BOSQUE", "TAZA", "ZAPATO", "MAPA", "FARO", "LIBRO", "TREN", "PIANO", "ARENA", "PLUMA", "CAMINO", "ESFERA", "ESPEJO", "DEDO", "SOL", "ANCLA", "MANO", "LAGO", "RAMA", "LUNA", "COCHE", "FLOR", "BOTE", "PASTO", "FRUTA"];
 
         const CLINICAL = [
-            { id: 'c1', title: "Restricción de Sueño", summary: "Presión de adenosina.", detail: "Limita el tiempo en cama estrictamente al tiempo real de sueño para consolidar las fases profundas." },
-            { id: 'c2', title: "Control de Estímulos", summary: "Cama → Sueño.", detail: "Si en 20 min no duermes, sal de la cama. Haz algo aburrido bajo luz tenue hasta sentir sueño real." },
-            { id: 'c3', title: "Higiene de Luz", summary: "+58% Melatonina.", detail: "Luz solar intensa al despertar y bloqueo total de luz azul 90 min antes de dormir." },
-            { id: 'c4', title: "Frío Activo", summary: "Térmico.", detail: "La caída de la temperatura nuclear dispara el sueño. Ducha tibia o calcetines ayudan." }
+            { id: 'c1', title: "Suspiro Fisiológico", summary: "Stanford Protocol", detail: "Dos inhalaciones por nariz + una exhalación larga por boca. Es el mecanismo biológico más rápido para reducir la ansiedad y reequilibrar CO2." },
+            { id: 'c2', title: "Restricción de Sueño", summary: "Presión de adenosina", detail: "Limita el tiempo en cama estrictamente al tiempo real de sueño para consolidar las fases profundas." },
+            { id: 'c3', title: "Control de Estímulos", summary: "Cama → Sueño", detail: "Si en 20 min no duermes, sal de la cama. Haz algo aburrido bajo luz tenue hasta sentir sueño real." },
+            { id: 'c4', title: "Higiene de Luz", summary: "+58% Melatonina", detail: "Luz solar intensa al despertar y bloqueo total de luz azul 90 min antes de dormir." }
         ];
 
         const MASTER_PATHS = [
-            { id: 'p1', name: "Foco Gamma (7d)", color: "text-sky-400", desc: "Entrenamiento biológico", sessionId: 'focus' },
-            { id: 'p2', name: "Reset de Estrés (14d)", color: "text-emerald-400", desc: "Entrenamiento biológico", sessionId: 'reset' },
-            { id: 'p3', name: "Bio-Sueño Profundo (21d)", color: "text-indigo-400", desc: "Entrenamiento biológico", sessionId: 'sleep' }
+            { id: 'p1', name: "Foco Gamma (7d)", color: "text-sky-400", desc: "Protocolo de flujo Gamma", sessionId: 'focus' },
+            { id: 'p2', name: "Reset de Estrés (14d)", color: "text-emerald-400", desc: "Control homeostático", sessionId: 'reset' },
+            { id: 'p3', name: "Bio-Sueño Profundo (21d)", color: "text-indigo-400", desc: "Higiene circadiana", sessionId: 'sleep' }
         ];
 
         function App() {
@@ -118,6 +118,9 @@
             const [isPlaying, setIsPlaying] = useState(false);
             const [sessionTime, setSessionTime] = useState(0);
             const [shuffleWord, setShuffleWord] = useState("");
+            const [breathLabel, setBreathLabel] = useState("");
+            const [breathStep, setBreathStep] = useState(0); // 0: inhale, 1: micro-inhale, 2: exhale
+            const [phaseSeconds, setPhaseSeconds] = useState(0);
             const [vol, setVol] = useState(0.15);
             const [carrier, setCarrier] = useState(210);
             const [wake, setWake] = useState(true);
@@ -134,77 +137,97 @@
                 if (loader) loader.style.display = 'none';
             }, []);
 
+            // --- MOTOR DE TIEMPO Y RESPIRACIÓN ---
             useEffect(() => {
                 let timer;
                 let shuffle;
+                let breathItv;
+
                 if (isPlaying) {
                     timer = setInterval(() => setSessionTime(p => p + 1), 1000);
+                    
                     if (current.id === 'sleep' || current.id === 'pink') {
                         const changeWord = () => setShuffleWord(WORDS[Math.floor(Math.random() * WORDS.length)]);
                         changeWord();
                         shuffle = setInterval(changeWord, 6000);
                     }
-                } else setSessionTime(0);
-                return () => { clearInterval(timer); clearInterval(shuffle); };
-            }, [isPlaying, current]);
 
-            const startPlayback = async (sessionToPlay) => {
+                    if (current.id === 'sigh' || (current.id === 'reset' && sessionTime < 180)) {
+                        let counter = 0;
+                        const runBreath = () => {
+                            if (counter < 3) {
+                                setBreathLabel("Inhala profundo");
+                                setBreathStep(0);
+                                setPhaseSeconds(3 - counter);
+                            } else if (counter < 4) {
+                                setBreathLabel("Micro Inhala");
+                                setBreathStep(1);
+                                setPhaseSeconds(1);
+                            } else {
+                                setBreathLabel("Exhala largo");
+                                setBreathStep(2);
+                                setPhaseSeconds(10 - counter);
+                            }
+                            counter = (counter + 1) % 10;
+                        };
+                        runBreath();
+                        breathItv = setInterval(runBreath, 1000);
+                    }
+                } else {
+                    setSessionTime(0);
+                    setShuffleWord("");
+                    setBreathLabel("");
+                    setPhaseSeconds(0);
+                }
+                return () => { 
+                    clearInterval(timer); 
+                    clearInterval(shuffle); 
+                    clearInterval(breathItv);
+                };
+            }, [isPlaying, current, sessionTime < 180]);
+
+            const startAudioEngine = async (sessionToPlay) => {
                 if (!audioRef.current.ctx) {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
                     audioRef.current.ctx = new AudioCtx();
                     audioRef.current.master = audioRef.current.ctx.createGain();
                     audioRef.current.master.connect(audioRef.current.ctx.destination);
                 }
-                
                 const { ctx, master } = audioRef.current;
                 if (ctx.state === 'suspended') await ctx.resume();
-
-                // Detener cualquier oscilador previo
                 if (audioRef.current.l) { audioRef.current.l.stop(); audioRef.current.r.stop(); }
-                
                 const lO = ctx.createOscillator(); const rO = ctx.createOscillator();
                 const lP = ctx.createStereoPanner(); const rP = ctx.createStereoPanner();
-                
                 lP.pan.value = -1; rP.pan.value = 1;
-                lO.frequency.value = carrier; 
-                rO.frequency.value = carrier + sessionToPlay.diff;
-                
+                lO.frequency.value = carrier; rO.frequency.value = carrier + sessionToPlay.diff;
                 lO.connect(lP).connect(master); rO.connect(rP).connect(master);
                 lO.start(); rO.start();
-                
                 audioRef.current.l = lO; audioRef.current.r = rO;
                 master.gain.setValueAtTime(0, ctx.currentTime);
                 master.gain.linearRampToValueAtTime(vol, ctx.currentTime + 1.5);
-                
                 setIsPlaying(true);
                 setWake(true);
             };
 
             const toggleAudio = async () => {
                 if (isPlaying) {
-                    if (audioRef.current.master) {
-                        audioRef.current.master.gain.exponentialRampToValueAtTime(0.0001, audioRef.current.ctx.currentTime + 1);
-                    }
+                    if (audioRef.current.master) audioRef.current.master.gain.exponentialRampToValueAtTime(0.0001, audioRef.current.ctx.currentTime + 1);
                     setIsPlaying(false);
                 } else {
-                    await startPlayback(current);
+                    await startAudioEngine(current);
                 }
             };
 
-            // Función corregida para iniciar una ruta automáticamente
             const startPath = async (path) => {
                 const targetSession = SESSIONS[path.sessionId];
                 setActivePathId(path.id);
                 setCurrent(targetSession);
                 setTab('sync');
-                
-                // Pequeño delay para asegurar que el cambio de estado se procese y la UI sea coherente
-                setTimeout(async () => {
-                    await startPlayback(targetSession);
-                }, 100);
+                setTimeout(async () => { await startAudioEngine(targetSession); }, 150);
             };
 
             const isZen = isPlaying && (current.id === 'sleep' || current.id === 'pink');
+            const isBreathing = isPlaying && (current.id === 'sigh' || (current.id === 'reset' && sessionTime < 180));
 
             return (
                 <div onClick={() => { setWake(true); isPlaying && setTimeout(() => setWake(false), 5000); }} 
@@ -221,45 +244,48 @@
                     <main className="flex-1 overflow-y-auto no-scrollbar relative">
                         {tab === 'sync' && (
                             <div className="min-h-full flex flex-col space-y-6 animate-in">
-                                <div className="flex flex-col items-center justify-center min-h-[300px] shrink-0 relative">
-                                    {isPlaying && current.id === 'reset' ? (
+                                
+                                <div className="flex flex-col items-center justify-center min-h-[320px] shrink-0 relative">
+                                    {isBreathing ? (
                                         <div className="text-center space-y-10 w-full max-w-xs animate-in">
-                                            <p className="text-[10px] uppercase tracking-[0.5em] text-emerald-400 font-bold">Reset Neural Activo</p>
-                                            <h2 className="text-3xl font-extralight text-white uppercase tracking-tighter">
-                                                {sessionTime < 180 ? "Suspiro Fisiológico" : sessionTime < 720 ? "Inmersión NSDR" : "Anclaje Neural"}
-                                            </h2>
+                                            <p className="text-[10px] uppercase tracking-[0.5em] text-emerald-400 font-bold">Suspiro Fisiológico</p>
+                                            <div className="relative flex items-center justify-center">
+                                                {/* Círculo Guía */}
+                                                <div className={`w-48 h-48 rounded-full border-2 transition-all duration-[1000ms] flex flex-col items-center justify-center`}
+                                                     style={{ 
+                                                         borderColor: 'rgba(16, 185, 129, 0.2)',
+                                                         transform: `scale(${breathStep === 0 ? 1.4 : breathStep === 1 ? 1.5 : 1.0})`,
+                                                         boxShadow: `0 0 60px rgba(16, 185, 129, ${breathStep === 2 ? 0 : 0.15})`
+                                                     }}>
+                                                     <p className="text-white text-3xl font-extralight mb-1">{phaseSeconds}s</p>
+                                                     <p className="text-emerald-500 text-[10px] font-bold uppercase tracking-widest">{breathLabel}</p>
+                                                </div>
+                                            </div>
                                             <div className="h-[2px] bg-white/5 w-full rounded-full overflow-hidden">
                                                 <div className="progress-bar" style={{ width: `${(sessionTime/900)*100}%` }}></div>
                                             </div>
+                                            <p className="text-[9px] text-slate-600 uppercase tracking-[0.2em]">Expulsión de CO2 activa</p>
                                         </div>
                                     ) : isZen ? (
                                         <div className="text-center space-y-16">
-                                            <p className="text-[10px] uppercase tracking-[0.8em] text-indigo-500/30 font-bold">Concentra tu mente en</p>
-                                            <h2 className="text-6xl md:text-8xl font-extralight text-slate-100 uppercase tracking-tighter transition-all duration-1000 leading-tight">
-                                                {shuffleWord}
-                                            </h2>
+                                            <p className="text-[10px] uppercase tracking-[0.8em] text-indigo-500/30 font-bold">Visualiza</p>
+                                            <h2 className="text-6xl md:text-8xl font-extralight text-slate-100 uppercase tracking-tighter transition-all duration-1000 leading-tight">{shuffleWord}</h2>
                                             <div className="w-1 h-1 bg-indigo-500/10 rounded-full mx-auto animate-ping" />
                                         </div>
                                     ) : (
                                         <div className="w-44 h-44 rounded-full border border-white/5 flex flex-col items-center justify-center transition-all duration-[1000ms]"
                                              style={{ borderColor: isPlaying ? current.color + '44' : '#ffffff11', transform: `scale(${isPlaying ? 1.05 : 1})`, boxShadow: isPlaying ? `0 0 80px ${current.color}11` : 'none' }}>
-                                            {isPlaying ? 
-                                                <span className="text-4xl font-extralight text-white/80">{Math.floor(sessionTime/60)}:{(sessionTime%60).toString().padStart(2,'0')}</span>
-                                                : <div className="opacity-20"><IconZap /></div>
-                                            }
+                                            {isPlaying ? <span className="text-4xl font-extralight text-white/80">{Math.floor(sessionTime/60)}:{(sessionTime%60).toString().padStart(2,'0')}</span> : <div className="opacity-20"><IconZap /></div>}
                                         </div>
                                     )}
                                 </div>
 
                                 {!isPlaying && (
-                                    <div className="space-y-3 max-w-sm mx-auto w-full px-2 animate-in pb-72">
-                                        <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4 pl-1">Módulos de Sincronía</h3>
+                                    <div className="space-y-3 max-w-sm mx-auto w-full px-2 animate-in pb-80">
+                                        <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4 pl-1">Sincronizadores</h3>
                                         {Object.values(SESSIONS).map(s => (
                                             <div key={s.id} onClick={() => setCurrent(s)} className={`p-5 glass-card border flex justify-between items-center transition-all ${current.id === s.id ? 'bg-white/[0.03] border-sky-500/30 shadow-xl' : 'opacity-30 border-transparent grayscale'}`}>
-                                                <div>
-                                                    <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-200">{s.name}</h4>
-                                                    <p className="text-[9px] text-slate-600 mt-1 uppercase tracking-widest leading-none">{s.desc}</p>
-                                                </div>
+                                                <div><h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-200">{s.name}</h4><p className="text-[8px] text-slate-600 mt-1 uppercase">{s.desc}</p></div>
                                                 <span className="text-[8px] font-mono text-sky-500/40">{s.type}</span>
                                             </div>
                                         ))}
@@ -269,28 +295,23 @@
                         )}
 
                         {tab === 'paths' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
-                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Rutas de Maestría</h2>
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-80">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Rutas Maestras</h2>
                                 {MASTER_PATHS.map((p) => (
                                     <div key={p.id} className={`glass-card p-6 border flex justify-between items-center transition-all ${activePathId === p.id ? 'border-sky-500/40 bg-sky-500/5 opacity-100' : 'border-white/5 opacity-60'}`}>
                                         <div className="flex items-center gap-4">
                                            <div className={`p-3 rounded-xl bg-white/5 ${p.color}`}><IconCompass /></div>
                                            <div><h4 className="text-[11px] font-bold uppercase tracking-wider">{p.name}</h4><p className="text-[9px] text-slate-500 uppercase">{p.desc}</p></div>
                                         </div>
-                                        <button 
-                                            onClick={() => startPath(p)}
-                                            className={`text-[8px] font-bold uppercase tracking-widest border px-4 py-2 rounded-full transition-all ${activePathId === p.id ? 'bg-sky-500 text-slate-950 border-sky-500' : 'border-white/10'}`}
-                                        >
-                                            {activePathId === p.id ? 'Activo' : 'Iniciar'}
-                                        </button>
+                                        <button onClick={() => startPath(p)} className={`text-[8px] font-bold uppercase tracking-widest border px-4 py-2 rounded-full transition-all ${activePathId === p.id ? 'bg-sky-500 text-slate-950 border-sky-500' : 'border-white/10'}`}>{activePathId === p.id ? 'Activo' : 'Iniciar'}</button>
                                     </div>
                                 ))}
                             </div>
                         )}
 
                         {tab === 'labs' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
-                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Evidence Lab</h2>
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-80">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Science Lab</h2>
                                 {CLINICAL.map(p => (
                                     <div key={p.id} className={`glass-card border overflow-hidden transition-all duration-500 ${expanded === p.id ? 'border-sky-500/40 bg-white/[0.02]' : 'border-white/5 opacity-70'}`}>
                                         <button onClick={() => setExpanded(expanded === p.id ? null : p.id)} className="w-full p-5 flex items-center justify-between">
@@ -304,17 +325,17 @@
                         )}
 
                         {tab === 'logs' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-80">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Bitácora Eureka</h2>
                                 <div className="glass-card p-6 space-y-4">
-                                    <textarea value={noteIn} onChange={e => setNoteIn(e.target.value)} placeholder="Captura un pensamiento profundo..." className="w-full bg-transparent text-sm text-slate-400 outline-none h-20 resize-none border-b border-white/5 pb-2" />
-                                    <button onClick={() => { if(noteIn.trim()) { setNotes([{id:Date.now(), text:noteIn, session:current.name}, ...notes]); setNoteIn(""); } }} className="w-full py-3 bg-white/5 text-[9px] font-bold uppercase tracking-widest rounded-2xl">Guardar Nota</button>
+                                    <textarea value={noteIn} onChange={e => setNoteIn(e.target.value)} placeholder="Captura flujo cognitivo..." className="w-full bg-transparent text-sm text-slate-400 outline-none h-20 resize-none border-b border-white/5 pb-2" />
+                                    <button onClick={() => { if(noteIn.trim()) { setNotes([{id:Date.now(), text:noteIn, session:current.name}, ...notes]); setNoteIn(""); } }} className="w-full py-3 bg-white/5 text-[9px] font-bold uppercase tracking-widest rounded-2xl active:bg-white/10">Guardar</button>
                                 </div>
                                 <div className="space-y-3">
                                     {notes.map(n => (
-                                        <div key={n.id} className="glass-card p-5 border border-white/5 flex justify-between">
-                                            <div className="flex-1"><span className="text-[8px] font-bold text-sky-500 uppercase tracking-widest">{n.session}</span><p className="text-[11px] text-slate-400 mt-2 font-light italic leading-relaxed">"{n.text}"</p></div>
-                                            <button onClick={() => setNotes(notes.filter(x => x.id !== n.id))} className="text-slate-800 ml-4"><IconTrash /></button>
+                                        <div key={n.id} className="glass-card p-5 border border-white/5 flex justify-between group">
+                                            <div className="flex-1"><span className="text-[8px] font-bold text-sky-500 uppercase tracking-widest">{n.session}</span><p className="text-[11px] text-slate-400 mt-1 italic">"{n.text}"</p></div>
+                                            <button onClick={() => setNotes(notes.filter(x => x.id !== n.id))} className="text-slate-800 ml-4 hover:text-rose-500 transition-colors"><IconTrash /></button>
                                         </div>
                                     ))}
                                 </div>
@@ -322,18 +343,18 @@
                         )}
 
                         {tab === 'bio' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-80">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Perfil Bio-Neural</h2>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="glass-card p-6 flex flex-col items-center"><span className="text-[9px] font-bold text-slate-600 uppercase mb-2">Cronotipo</span><span className="text-sm font-bold">Búho</span></div>
                                     <div className="glass-card p-6 flex flex-col items-center"><span className="text-[9px] font-bold text-slate-600 uppercase mb-2">Temp</span><span className="text-sm font-bold">18.5°C</span></div>
                                 </div>
                                 <div className="glass-card p-7 space-y-4">
-                                    <h4 className="text-[10px] font-bold uppercase text-slate-500 tracking-[0.2em] border-b border-white/5 pb-3">Higiene Bio-Neural</h4>
+                                    <h4 className="text-[10px] font-bold uppercase text-slate-500 tracking-[0.2em] border-b border-white/5 pb-3">Neuro-Tips</h4>
                                     <ul className="space-y-4 text-[11px] text-slate-400 font-light">
                                         <li>• Bloqueo luz azul 90m antes.</li>
                                         <li>• Cero cafeína después de las 14:00.</li>
-                                        <li>• Exposición solar matutina (30 min).</li>
+                                        <li>• Exposición solar AM (30 min).</li>
                                         <li>• Ducha tibia 2h antes de dormir.</li>
                                     </ul>
                                 </div>
@@ -341,30 +362,29 @@
                         )}
                     </main>
 
-                    {/* Isla de Control Flotante */}
+                    {/* Isla de Control Fija */}
                     <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-fit bg-[#0f172a]/90 backdrop-blur-3xl border border-white/10 rounded-full p-2 flex items-center gap-6 shadow-2xl z-[90] transition-all duration-700 ${isZen && !wake ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}>
                         <button onClick={(e) => { e.stopPropagation(); setShowMixer(!showMixer); }} className="ml-5 p-2 text-slate-700 hover:text-sky-400 transition-colors"><IconSliders /></button>
                         <button onClick={(e) => { e.stopPropagation(); toggleAudio(); }} className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-white/5 text-white' : 'bg-emerald-500 text-slate-950 active:scale-95 shadow-xl shadow-emerald-500/20'}`}>{isPlaying ? <IconPause /> : <IconPlay />}</button>
                         {!isPlaying && <div className="mr-8"><p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">{current.name}</p></div>}
                     </div>
 
-                    {/* Navbar Principal */}
+                    {/* Navbar */}
                     <nav className={`fixed bottom-0 left-0 right-0 h-20 bg-slate-950/95 backdrop-blur-3xl border-t border-white/5 flex items-center justify-around px-2 z-[100] transition-opacity duration-1000 ${isZen && !wake ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                        <button onClick={() => setTab('sync')} className={`flex flex-col items-center gap-1 ${tab === 'sync' ? 'text-sky-500' : 'text-slate-800'}`}><IconZap /><span className="text-[8px] font-bold uppercase text-center w-full">Sync</span></button>
-                        <button onClick={() => setTab('paths')} className={`flex flex-col items-center gap-1 ${tab === 'paths' ? 'text-sky-500' : 'text-slate-800'}`}><IconCompass /><span className="text-[8px] font-bold uppercase text-center w-full">Rutas</span></button>
-                        <button onClick={() => setTab('labs')} className={`flex flex-col items-center gap-1 ${tab === 'labs' ? 'text-sky-500' : 'text-slate-800'}`}><IconBrain /><span className="text-[8px] font-bold uppercase text-center w-full">Science</span></button>
-                        <button onClick={() => setTab('logs')} className={`flex flex-col items-center gap-1 ${tab === 'logs' ? 'text-sky-500' : 'text-slate-800'}`}><IconJournal /><span className="text-[8px] font-bold uppercase text-center w-full">Logs</span></button>
-                        <button onClick={() => setTab('bio')} className={`flex flex-col items-center gap-1 ${tab === 'bio' ? 'text-sky-500' : 'text-slate-800'}`}><IconUser /><span className="text-[8px] font-bold uppercase text-center w-full">Bio</span></button>
+                        <button onClick={() => setTab('sync')} className={`flex flex-col items-center gap-1 ${tab === 'sync' ? 'text-sky-500' : 'text-slate-800'}`}><IconZap /><span className="text-[8px] font-bold uppercase">Sync</span></button>
+                        <button onClick={() => setTab('paths')} className={`flex flex-col items-center gap-1 ${tab === 'paths' ? 'text-sky-500' : 'text-slate-800'}`}><IconCompass /><span className="text-[8px] font-bold uppercase">Rutas</span></button>
+                        <button onClick={() => setTab('labs')} className={`flex flex-col items-center gap-1 ${tab === 'labs' ? 'text-sky-500' : 'text-slate-800'}`}><IconBrain /><span className="text-[8px] font-bold uppercase">Science</span></button>
+                        <button onClick={() => setTab('logs')} className={`flex flex-col items-center gap-1 ${tab === 'logs' ? 'text-sky-500' : 'text-slate-800'}`}><IconJournal /><span className="text-[8px] font-bold uppercase">Logs</span></button>
+                        <button onClick={() => setTab('bio')} className={`flex flex-col items-center gap-1 ${tab === 'bio' ? 'text-sky-500' : 'text-slate-800'}`}><IconUser /><span className="text-[8px] font-bold uppercase">Bio</span></button>
                     </nav>
 
-                    {/* Modal Mixer */}
                     {showMixer && (
                         <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-end justify-center p-4" onClick={() => setShowMixer(false)}>
                             <div className="w-full max-w-sm glass-card p-10 space-y-10 animate-in" onClick={e => e.stopPropagation()}>
                                 <div className="flex justify-between items-center"><h3 className="text-[10px] font-bold uppercase text-sky-500 tracking-[0.5em]">Neural Mixer</h3><div onClick={() => setShowMixer(false)} className="text-slate-700 cursor-pointer"><IconX /></div></div>
                                 <div className="space-y-10">
-                                    <div><p className="text-[10px] uppercase font-bold text-slate-700 mb-4 tracking-widest text-right">{Math.round(vol*100)}% Intensity</p><input type="range" min="0" max="0.5" step="0.01" value={vol} onChange={e => setVol(Number(e.target.value))} className="w-full accent-sky-600" /></div>
-                                    <div><p className="text-[10px] uppercase font-bold text-slate-700 mb-4 tracking-widest text-right">{carrier}Hz Carrier</p><input type="range" min="100" max="400" step="10" value={carrier} onChange={e => setCarrier(Number(e.target.value))} className="w-full accent-indigo-600" /></div>
+                                    <div><p className="text-[10px] uppercase font-bold text-slate-700 mb-4 tracking-widest text-right">{Math.round(vol*100)}% Intensity</p><input type="range" min="0" max="0.5" step="0.01" value={vol} onChange={e => setVol(Number(e.target.value))} /></div>
+                                    <div><p className="text-[10px] uppercase font-bold text-slate-700 mb-4 tracking-widest text-right">{carrier}Hz Base</p><input type="range" min="100" max="400" step="10" value={carrier} onChange={e => setCarrier(Number(e.target.value))} /></div>
                                 </div>
                             </div>
                         </div>
