@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sincronía Pro | Omni-Master Final</title>
+    <title>Sincronía Pro | Omni-Master Full</title>
     
+    <!-- Frameworks -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+    
+    <!-- React & Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,10 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;800&family=Merriweather:wght@300;700&display=swap');
-        
         :root { --bg: #05070a; --accent: #38bdf8; --emerald: #10b981; }
-        
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--bg); 
@@ -38,15 +39,17 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 28px;
         }
+
+        /* Scrollbar invisible pero funcional para móvil */
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-in { animation: fadeIn 0.8s ease-out forwards; }
+        .animate-in { animation: fadeIn 0.6s ease-out forwards; }
 
         input[type=range] { -webkit-appearance: none; width: 100%; height: 1px; background: rgba(255,255,255,0.1); }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg); cursor: pointer; }
         
-        .progress-container { height: 2px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; width: 100%; }
         .progress-bar { height: 100%; background: var(--emerald); transition: width 1s linear; }
 
         #initial-loader {
@@ -62,7 +65,7 @@
     <div id="initial-loader">
         <div class="flex flex-col items-center gap-4">
             <div class="spinner"></div>
-            <p class="text-[9px] tracking-[0.4em] uppercase text-sky-500/40 font-bold">Cargando Sincronía Pro</p>
+            <p class="text-[9px] tracking-[0.4em] uppercase text-sky-500/40 font-bold">Iniciando Sincronía Pro</p>
         </div>
     </div>
 
@@ -83,28 +86,31 @@
         const IconSliders = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M2 14h4m4-6h4m4-8h4"/></svg>;
         const IconX = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 
+        // --- SESIONES ---
         const SESSIONS = {
+            reset: { id: 'reset', name: "Reset 15 min", diff: 10, color: "#10b981", type: "Neuro-Reset", desc: "Stanford: Suspiro + NSDR + Alfa." },
             sleep: { id: 'sleep', name: "Sueño Reparador", diff: 2.5, color: "#6366f1", type: "Delta", desc: "Barajado Cognitivo Activo." },
-            reset: { id: 'reset', name: "Reset 15 min", diff: 10, color: "#10b981", type: "Neuro-Reset", desc: "Stanford: Suspiro + NSDR." },
-            pink: { id: 'pink', name: "Sincronía N3", diff: 1.5, color: "#ec4899", type: "Deep Delta", desc: "Ruido Rosa + Barajado." },
-            nsdr: { id: 'nsdr', name: "Yoga Nidra", diff: 4.0, color: "#0ea5e9", type: "Theta", desc: "Descanso profundo." },
-            focus: { id: 'focus', name: "Foco Profundo", diff: 30, color: "#38bdf8", type: "Gamma", desc: "Flujo cognitivo." }
+            pink: { id: 'pink', name: "Sincronía N3", diff: 1.5, color: "#ec4899", type: "N3", desc: "Ruido Rosa + Restauración." },
+            nsdr: { id: 'nsdr', name: "Reset NSDR", diff: 4.0, color: "#0ea5e9", type: "Theta", desc: "Yoga Nidra de descanso." },
+            vagus: { id: 'vagus', name: "Activación Vagal", diff: 6.0, color: "#f59e0b", type: "Alpha-Theta", desc: "Respiración 4-7-8 científica." },
+            focus: { id: 'focus', name: "Foco Profundo", diff: 30, color: "#38bdf8", type: "Gamma", desc: "Máxima agudeza cognitiva." }
         };
 
-        const WORDS = ["NUBE", "GATO", "RELOJ", "ESTRELLA", "PUENTE", "VELA", "BOSQUE", "TAZA", "ZAPATO", "MAPA", "FARO", "LIBRO", "TREN", "PIANO", "ARENA", "PLUMA", "CAMINO", "ESFERA", "ESPEJO", "DEDO", "SOL", "ANCLA", "MANO", "LAGO", "RAMA"];
+        const WORDS = ["NUBE", "GATO", "RELOJ", "ESTRELLA", "PUENTE", "VELA", "BOSQUE", "TAZA", "ZAPATO", "MAPA", "FARO", "LIBRO", "TREN", "PIANO", "ARENA", "PLUMA", "CAMINO", "ESFERA", "ESPEJO", "DEDO", "SOL", "ANCLA", "MANO", "LAGO", "RAMA", "LUNA", "COCHE", "FLOR", "BOTE", "PASTO", "FRUTA"];
 
         const CLINICAL = [
             { id: 'c1', title: "Restricción de Sueño", summary: "Presión de adenosina.", detail: "Limita el tiempo en cama estrictamente al tiempo real de sueño para consolidar las fases profundas." },
             { id: 'c2', title: "Control de Estímulos", summary: "Cama → Sueño.", detail: "Si en 20 min no duermes, sal de la cama. Haz algo aburrido bajo luz tenue hasta sentir sueño real." },
-            { id: 'c3', title: "Higiene de Luz", summary: "+58% Melatonina.", detail: "Luz solar intensa al despertar y bloqueo total de luz azul 90 min antes de dormir." }
+            { id: 'c3', title: "Higiene de Luz", summary: "+58% Melatonina.", detail: "Luz solar intensa al despertar y bloqueo total de luz azul 90 min antes de dormir." },
+            { id: 'c4', title: "Frío Activo", summary: "Térmico.", detail: "La caída de la temperatura nuclear dispara el sueño. Ducha tibia o calcetines ayudan." }
         ];
 
         function App() {
             const [tab, setTab] = useState('sync');
-            const [current, setCurrent] = useState(SESSIONS.sleep);
+            const [current, setCurrent] = useState(SESSIONS.reset);
             const [isPlaying, setIsPlaying] = useState(false);
             const [sessionTime, setSessionTime] = useState(0);
-            const [shuffleWord, setShuffleWord] = useState("INICIO");
+            const [shuffleWord, setShuffleWord] = useState("");
             const [vol, setVol] = useState(0.15);
             const [carrier, setCarrier] = useState(210);
             const [wake, setWake] = useState(true);
@@ -120,37 +126,24 @@
                 if (loader) loader.style.display = 'none';
             }, []);
 
-            // --- MOTOR DE TIEMPO Y BARAJADO ---
             useEffect(() => {
                 let timer;
                 let shuffle;
-
                 if (isPlaying) {
                     timer = setInterval(() => setSessionTime(p => p + 1), 1000);
-                    
-                    // Solo activar barajado en estas sesiones
                     if (current.id === 'sleep' || current.id === 'pink') {
-                        const changeWord = () => {
-                            const newWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-                            setShuffleWord(newWord);
-                        };
-                        changeWord(); // Primer cambio al arrancar
-                        shuffle = setInterval(changeWord, 6000); // Luego cada 6s
+                        const changeWord = () => setShuffleWord(WORDS[Math.floor(Math.random() * WORDS.length)]);
+                        changeWord();
+                        shuffle = setInterval(changeWord, 6000);
                     }
-                } else {
-                    setSessionTime(0);
-                }
-
-                return () => {
-                    clearInterval(timer);
-                    clearInterval(shuffle);
-                };
+                } else setSessionTime(0);
+                return () => { clearInterval(timer); clearInterval(shuffle); };
             }, [isPlaying, current]);
 
             const toggleAudio = async () => {
                 if (!audioRef.current.ctx) {
-                    const Ctx = window.AudioContext || window.webkitAudioContext;
-                    audioRef.current.ctx = new Ctx();
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    audioRef.current.ctx = new AudioCtx();
                     audioRef.current.master = audioRef.current.ctx.createGain();
                     audioRef.current.master.connect(audioRef.current.ctx.destination);
                 }
@@ -170,13 +163,12 @@
                     lO.start(); rO.start();
                     audioRef.current.l = lO; audioRef.current.r = rO;
                     master.gain.setValueAtTime(0, ctx.currentTime);
-                    master.gain.linearRampToValueAtTime(vol, ctx.currentTime + 2.5);
+                    master.gain.linearRampToValueAtTime(vol, ctx.currentTime + 2);
                     setIsPlaying(true);
                     setWake(true);
                 }
             };
 
-            // Identifica si estamos en modo barajado (Zen)
             const isZen = isPlaying && (current.id === 'sleep' || current.id === 'pink');
 
             return (
@@ -189,36 +181,36 @@
                             <div className="p-2 glass-card text-sky-500/40"><IconBrain /></div>
                             <h1 className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/40">Sincronía Pro</h1>
                         </div>
-                        <div className="w-2 h-2 rounded-full bg-emerald-500/30 animate-pulse"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30 animate-pulse"></div>
                     </header>
 
-                    <main className="flex-1 overflow-y-auto pb-44 no-scrollbar">
+                    {/* Main Content Area con Scroll Habilitado */}
+                    <main className="flex-1 overflow-y-auto no-scrollbar pb-32">
                         {tab === 'sync' && (
-                            <div className="h-full flex flex-col justify-center space-y-10 animate-in">
-                                <div className="flex flex-col items-center justify-center min-h-[350px] relative">
-                                    {/* VISUAL RESET 15 MIN */}
+                            <div className="min-h-full flex flex-col space-y-8 animate-in">
+                                {/* Visualizer Section */}
+                                <div className="flex flex-col items-center justify-center min-h-[320px] relative">
                                     {isPlaying && current.id === 'reset' ? (
                                         <div className="text-center space-y-10 w-full max-w-xs">
-                                            <p className="text-[10px] uppercase tracking-[0.6em] text-emerald-400 font-bold">Reset Neural Activo</p>
+                                            <p className="text-[10px] uppercase tracking-[0.5em] text-emerald-400 font-bold">Reset Neural Activo</p>
                                             <h2 className="text-3xl font-extralight text-white uppercase tracking-tighter">
                                                 {sessionTime < 180 ? "Suspiro Fisiológico" : sessionTime < 720 ? "Inmersión NSDR" : "Anclaje Neural"}
                                             </h2>
-                                            <div className="progress-container"><div className="progress-bar" style={{ width: `${(sessionTime/900)*100}%` }}></div></div>
-                                            <p className="text-[9px] text-slate-600 uppercase tracking-widest">Reprogramando sistema nervioso</p>
+                                            <div className="h-[2px] bg-white/5 w-full rounded-full overflow-hidden">
+                                                <div className="progress-bar" style={{ width: `${(sessionTime/900)*100}%` }}></div>
+                                            </div>
                                         </div>
                                     ) : isZen ? (
-                                        /* VISUAL BARAJADO COGNITIVO (ESTO ES LO QUE NO APARECÍA) */
-                                        <div className="text-center space-y-16 animate-in">
-                                            <p className="text-[10px] uppercase tracking-[0.8em] text-indigo-500/30 font-bold">Visualiza mentalmente</p>
-                                            <h2 className="text-6xl md:text-8xl font-extralight text-white uppercase tracking-tighter transition-all duration-1000 leading-tight">
+                                        <div className="text-center space-y-16">
+                                            <p className="text-[10px] uppercase tracking-[0.8em] text-indigo-500/30 font-bold">Concentra tu mente en</p>
+                                            <h2 className="text-6xl md:text-8xl font-extralight text-slate-100 uppercase tracking-tighter transition-all duration-1000 leading-tight">
                                                 {shuffleWord}
                                             </h2>
-                                            <div className="w-1.5 h-1.5 bg-indigo-500/20 rounded-full mx-auto animate-ping" />
+                                            <div className="w-1 h-1 bg-indigo-500/10 rounded-full mx-auto animate-ping" />
                                         </div>
                                     ) : (
-                                        /* VISUAL ESTÁNDAR / SELECCIÓN */
                                         <div className="w-44 h-44 rounded-full border border-white/5 flex flex-col items-center justify-center transition-all duration-[1000ms]"
-                                             style={{ borderColor: isPlaying ? current.color + '44' : '#ffffff11', transform: `scale(${isPlaying ? 1.05 : 1})`, boxShadow: isPlaying ? `0 0 100px ${current.color}11` : 'none' }}>
+                                             style={{ borderColor: isPlaying ? current.color + '44' : '#ffffff11', transform: `scale(${isPlaying ? 1.05 : 1})`, boxShadow: isPlaying ? `0 0 80px ${current.color}11` : 'none' }}>
                                             {isPlaying ? 
                                                 <span className="text-4xl font-extralight text-white/80">{Math.floor(sessionTime/60)}:{(sessionTime%60).toString().padStart(2,'0')}</span>
                                                 : <div className="opacity-20"><IconZap /></div>
@@ -227,52 +219,131 @@
                                     )}
                                 </div>
 
+                                {/* Sessions List con margen inferior extra */}
                                 {!isPlaying && (
-                                    <div className="space-y-3 max-w-sm mx-auto w-full px-2 animate-in">
+                                    <div className="space-y-3 max-w-sm mx-auto w-full px-2 animate-in pb-48">
+                                        <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4">Módulos de Sincronía</h3>
                                         {Object.values(SESSIONS).map(s => (
-                                            <div key={s.id} onClick={() => setCurrent(s)} className={`p-5 glass-card border flex justify-between items-center transition-all ${current.id === s.id ? 'bg-white/[0.03] border-sky-500/20' : 'opacity-20 border-transparent grayscale'}`}>
-                                                <div><h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-200">{s.name}</h4><p className="text-[8px] text-slate-500 mt-1 uppercase tracking-widest">{s.desc}</p></div>
+                                            <div key={s.id} onClick={() => setCurrent(s)} className={`p-5 glass-card border flex justify-between items-center transition-all ${current.id === s.id ? 'bg-white/[0.03] border-sky-500/30 shadow-xl' : 'opacity-30 border-transparent grayscale'}`}>
+                                                <div>
+                                                    <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-200">{s.name}</h4>
+                                                    <p className="text-[9px] text-slate-600 mt-1 uppercase tracking-widest">{s.desc}</p>
+                                                </div>
                                                 <span className="text-[8px] font-mono text-sky-500/40">{s.type}</span>
                                             </div>
                                         ))}
+                                        {/* Espacio fantasma para superar el botón */}
+                                        <div className="h-20 w-full"></div>
                                     </div>
                                 )}
                             </div>
                         )}
 
                         {tab === 'paths' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2">
-                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30 px-1">Rutas de Maestría</h2>
-                                {["Foco Profundo (7d)", "Control de Estrés (14d)", "Arquitecto del Sueño (21d)"].map((p, i) => (
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Rutas de Maestría</h2>
+                                {["Foco Gamma (7d)", "Reset de Estrés (14d)", "Bio-Sueño Profundo (21d)"].map((p, i) => (
                                     <div key={i} className="glass-card p-6 border border-white/5 flex justify-between items-center opacity-60">
                                         <div className="flex items-center gap-4">
                                            <div className="p-3 rounded-xl bg-white/5 text-sky-500"><IconCompass /></div>
-                                           <div><h4 className="text-[11px] font-bold uppercase tracking-wider">{p}</h4><p className="text-[9px] text-slate-500 uppercase tracking-widest">Protocolo Diario</p></div>
+                                           <div><h4 className="text-[11px] font-bold uppercase tracking-wider">{p}</h4><p className="text-[9px] text-slate-500 uppercase">Entrenamiento biológico</p></div>
                                         </div>
                                         <button className="text-[8px] font-bold uppercase tracking-widest border border-white/10 px-4 py-2 rounded-full">Iniciar</button>
                                     </div>
                                 ))}
+                                <div className="h-20 w-full"></div>
                             </div>
                         )}
 
                         {tab === 'labs' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2">
-                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30 px-1">Evidence Lab</h2>
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Evidence Lab</h2>
                                 {CLINICAL.map(p => (
                                     <div key={p.id} className={`glass-card border overflow-hidden transition-all duration-500 ${expanded === p.id ? 'border-sky-500/40 bg-white/[0.02]' : 'border-white/5 opacity-70'}`}>
-                                        <button onClick={() => setExpanded(expanded === p.id ? null : p.id)} className="w-full p-6 text-left flex justify-between items-center">
-                                            <div><h4 className="text-[11px] font-bold uppercase tracking-wider">{p.title}</h4><p className="text-[8px] text-slate-600 font-mono mt-1 uppercase">{p.summary}</p></div>
+                                        <button onClick={() => setExpanded(expanded === p.id ? null : p.id)} className="w-full p-5 flex items-center justify-between">
+                                            <h4 className="text-[11px] font-bold uppercase tracking-wider text-left">{p.title}</h4>
                                             <div className="text-slate-700">{expanded === p.id ? '▲' : '▼'}</div>
                                         </button>
-                                        {expanded === p.id && <div className="px-6 pb-8 text-xs text-slate-400 font-light leading-relaxed animate-in">{p.detail}</div>}
+                                        {expanded === p.id && <div className="px-5 pb-6 text-xs text-slate-400 font-light leading-relaxed animate-in">{p.detail}</div>}
                                     </div>
                                 ))}
+                                <div className="h-20 w-full"></div>
                             </div>
                         )}
 
                         {tab === 'logs' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2">
-                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30 px-1">Bitácora Eureka</h2>
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Bitácora Eureka</h2>
                                 <div className="glass-card p-6 space-y-4">
                                     <textarea value={noteIn} onChange={e => setNoteIn(e.target.value)} placeholder="Captura un pensamiento profundo..." className="w-full bg-transparent text-sm text-slate-400 outline-none h-20 resize-none border-b border-white/5 pb-2" />
-                                    <button onClick={() => { if(noteIn.trim()) { setNotes([{id:Date.now(), text:noteIn, session:current.name}, ...notes]); setNoteIn(""); } }} className="w-full py-3 bg-white/5 text-[9px] font-bold uppercase tracking-widest rounded-2xl active:b
+                                    <button onClick={() => { if(noteIn.trim()) { setNotes([{id:Date.now(), text:noteIn, session:current.name}, ...notes]); setNoteIn(""); } }} className="w-full py-3 bg-white/5 text-[9px] font-bold uppercase tracking-widest rounded-2xl">Guardar Nota</button>
+                                </div>
+                                <div className="space-y-3">
+                                    {notes.map(n => (
+                                        <div key={n.id} className="glass-card p-5 border border-white/5 flex justify-between">
+                                            <div className="flex-1"><span className="text-[8px] font-bold text-sky-500 uppercase tracking-widest">{n.session}</span><p className="text-[11px] text-slate-400 mt-2 font-light italic leading-relaxed">"{n.text}"</p></div>
+                                            <button onClick={() => setNotes(notes.filter(x => x.id !== n.id))} className="text-slate-800 ml-4"><IconTrash /></button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="h-20 w-full"></div>
+                            </div>
+                        )}
+
+                        {tab === 'bio' && (
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Perfil Bio-Neural</h2>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="glass-card p-6 flex flex-col items-center"><span className="text-[9px] font-bold text-slate-600 uppercase mb-2">Cronotipo</span><span className="text-sm font-bold">Búho</span></div>
+                                    <div className="glass-card p-6 flex flex-col items-center"><span className="text-[9px] font-bold text-slate-600 uppercase mb-2">Temp</span><span className="text-sm font-bold">18.5°C</span></div>
+                                </div>
+                                <div className="glass-card p-7 space-y-4">
+                                    <h4 className="text-[10px] font-bold uppercase text-slate-500 tracking-[0.2em] border-b border-white/5 pb-3">Higiene Bio-Neural</h4>
+                                    <ul className="space-y-4 text-[11px] text-slate-400 font-light">
+                                        <li>• Bloqueo luz azul 90m antes.</li>
+                                        <li>• Cero cafeína después de las 14:00.</li>
+                                        <li>• Exposición solar matutina (30 min).</li>
+                                        <li>• Ducha tibia 2h antes de dormir.</li>
+                                    </ul>
+                                </div>
+                                <div className="h-20 w-full"></div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Controlador Flotante - Elevado ligeramente para no pisar la nav */}
+                    <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-fit bg-[#0f172a]/80 backdrop-blur-3xl border border-white/5 rounded-full p-2 flex items-center gap-6 shadow-2xl z-[90] transition-all duration-700 ${isZen && !wake ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}>
+                        <button onClick={(e) => { e.stopPropagation(); setShowMixer(!showMixer); }} className="ml-5 p-2 text-slate-700 hover:text-sky-400 transition-colors"><IconSliders /></button>
+                        <button onClick={(e) => { e.stopPropagation(); toggleAudio(); }} className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-white/5 text-white' : 'bg-emerald-500 text-slate-950 active:scale-95 shadow-xl shadow-emerald-500/20'}`}>{isPlaying ? <IconPause /> : <IconPlay />}</button>
+                        {!isPlaying && <div className="mr-8"><p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">{current.name}</p></div>}
+                    </div>
+
+                    {/* Navbar Principal - Capa 40 */}
+                    <nav className={`fixed bottom-0 left-0 right-0 h-20 bg-slate-950/95 backdrop-blur-3xl border-t border-white/5 flex items-center justify-around px-2 z-40 transition-opacity duration-1000 ${isZen && !wake ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                        <button onClick={() => setTab('sync')} className={`flex flex-col items-center gap-1 ${tab === 'sync' ? 'text-sky-500' : 'text-slate-800'}`}><IconZap /><span className="text-[8px] font-bold uppercase text-center w-full">Sync</span></button>
+                        <button onClick={() => setTab('paths')} className={`flex flex-col items-center gap-1 ${tab === 'paths' ? 'text-sky-500' : 'text-slate-800'}`}><IconCompass /><span className="text-[8px] font-bold uppercase text-center w-full">Rutas</span></button>
+                        <button onClick={() => setTab('labs')} className={`flex flex-col items-center gap-1 ${tab === 'labs' ? 'text-sky-500' : 'text-slate-800'}`}><IconBrain /><span className="text-[8px] font-bold uppercase text-center w-full">Science</span></button>
+                        <button onClick={() => setTab('logs')} className={`flex flex-col items-center gap-1 ${tab === 'logs' ? 'text-sky-500' : 'text-slate-800'}`}><IconJournal /><span className="text-[8px] font-bold uppercase text-center w-full">Logs</span></button>
+                        <button onClick={() => setTab('bio')} className={`flex flex-col items-center gap-1 ${tab === 'bio' ? 'text-sky-500' : 'text-slate-800'}`}><IconUser /><span className="text-[8px] font-bold uppercase text-center w-full">Bio</span></button>
+                    </nav>
+
+                    {showMixer && (
+                        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-end justify-center p-4" onClick={() => setShowMixer(false)}>
+                            <div className="w-full max-w-sm glass-card p-10 space-y-10 animate-in" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center"><h3 className="text-[10px] font-bold uppercase text-sky-500 tracking-[0.5em]">Neural Mixer</h3><div onClick={() => setShowMixer(false)} className="text-slate-700 cursor-pointer"><IconX /></div></div>
+                                <div className="space-y-10">
+                                    <div><p className="text-[10px] uppercase font-bold text-slate-700 mb-4 tracking-widest text-right">{Math.round(vol*100)}% Intensity</p><input type="range" min="0" max="0.5" step="0.01" value={vol} onChange={e => setVol(Number(e.target.value))} className="w-full accent-sky-600" /></div>
+                                    <div><p className="text-[10px] uppercase font-bold text-slate-700 mb-4 tracking-widest text-right">{carrier}Hz Carrier</p><input type="range" min="100" max="400" step="10" value={carrier} onChange={e => setCarrier(Number(e.target.value))} className="w-full accent-indigo-600" /></div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
