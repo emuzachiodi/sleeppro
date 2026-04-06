@@ -26,6 +26,8 @@
             background-color: var(--bg); 
             color: #f1f5f9; 
             margin: 0; 
+            height: 100vh;
+            width: 100vw;
             overflow: hidden;
             -webkit-user-select: none;
             user-select: none;
@@ -69,7 +71,7 @@
         </div>
     </div>
 
-    <div id="root"></div>
+    <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
@@ -173,10 +175,10 @@
 
             return (
                 <div onClick={() => { setWake(true); isPlaying && setTimeout(() => setWake(false), 5000); }} 
-                     className={`min-h-screen flex flex-col p-6 transition-all duration-[1500ms] ${isZen && !wake ? 'bg-[#000000]' : 'bg-[#05070a]'}`}>
+                     className={`h-full w-full flex flex-col p-6 transition-all duration-[1500ms] ${isZen && !wake ? 'bg-[#000000]' : 'bg-[#05070a]'}`}>
                     
                     {/* Header */}
-                    <header className={`flex justify-between items-center mt-10 mb-4 transition-opacity duration-700 ${isZen && !wake ? 'opacity-0' : 'opacity-100'}`}>
+                    <header className={`flex justify-between items-center mt-6 mb-4 transition-opacity duration-700 shrink-0 ${isZen && !wake ? 'opacity-0' : 'opacity-100'}`}>
                         <div className="flex items-center gap-3">
                             <div className="p-2 glass-card text-sky-500/40"><IconBrain /></div>
                             <h1 className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/40">Sincronía Pro</h1>
@@ -184,12 +186,12 @@
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30 animate-pulse"></div>
                     </header>
 
-                    {/* Main Content Area con Scroll Habilitado */}
-                    <main className="flex-1 overflow-y-auto no-scrollbar pb-32">
+                    {/* Contenedor Principal de Desplazamiento */}
+                    <main className="flex-1 overflow-y-auto no-scrollbar relative">
                         {tab === 'sync' && (
-                            <div className="min-h-full flex flex-col space-y-8 animate-in">
-                                {/* Visualizer Section */}
-                                <div className="flex flex-col items-center justify-center min-h-[320px] relative">
+                            <div className="min-h-full flex flex-col space-y-6 animate-in">
+                                {/* Sección de Visualización (Círculo o Palabras) */}
+                                <div className="flex flex-col items-center justify-center min-h-[300px] shrink-0 relative">
                                     {isPlaying && current.id === 'reset' ? (
                                         <div className="text-center space-y-10 w-full max-w-xs">
                                             <p className="text-[10px] uppercase tracking-[0.5em] text-emerald-400 font-bold">Reset Neural Activo</p>
@@ -219,28 +221,26 @@
                                     )}
                                 </div>
 
-                                {/* Sessions List con margen inferior extra */}
+                                {/* Lista de Módulos (Scrollable) */}
                                 {!isPlaying && (
-                                    <div className="space-y-3 max-w-sm mx-auto w-full px-2 animate-in pb-48">
-                                        <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4">Módulos de Sincronía</h3>
+                                    <div className="space-y-3 max-w-sm mx-auto w-full px-2 animate-in pb-72">
+                                        <h3 className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4 pl-1">Módulos de Sincronía</h3>
                                         {Object.values(SESSIONS).map(s => (
                                             <div key={s.id} onClick={() => setCurrent(s)} className={`p-5 glass-card border flex justify-between items-center transition-all ${current.id === s.id ? 'bg-white/[0.03] border-sky-500/30 shadow-xl' : 'opacity-30 border-transparent grayscale'}`}>
                                                 <div>
                                                     <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-200">{s.name}</h4>
-                                                    <p className="text-[9px] text-slate-600 mt-1 uppercase tracking-widest">{s.desc}</p>
+                                                    <p className="text-[9px] text-slate-600 mt-1 uppercase tracking-widest leading-none">{s.desc}</p>
                                                 </div>
                                                 <span className="text-[8px] font-mono text-sky-500/40">{s.type}</span>
                                             </div>
                                         ))}
-                                        {/* Espacio fantasma para superar el botón */}
-                                        <div className="h-20 w-full"></div>
                                     </div>
                                 )}
                             </div>
                         )}
 
                         {tab === 'paths' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Rutas de Maestría</h2>
                                 {["Foco Gamma (7d)", "Reset de Estrés (14d)", "Bio-Sueño Profundo (21d)"].map((p, i) => (
                                     <div key={i} className="glass-card p-6 border border-white/5 flex justify-between items-center opacity-60">
@@ -251,12 +251,11 @@
                                         <button className="text-[8px] font-bold uppercase tracking-widest border border-white/10 px-4 py-2 rounded-full">Iniciar</button>
                                     </div>
                                 ))}
-                                <div className="h-20 w-full"></div>
                             </div>
                         )}
 
                         {tab === 'labs' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Evidence Lab</h2>
                                 {CLINICAL.map(p => (
                                     <div key={p.id} className={`glass-card border overflow-hidden transition-all duration-500 ${expanded === p.id ? 'border-sky-500/40 bg-white/[0.02]' : 'border-white/5 opacity-70'}`}>
@@ -267,12 +266,11 @@
                                         {expanded === p.id && <div className="px-5 pb-6 text-xs text-slate-400 font-light leading-relaxed animate-in">{p.detail}</div>}
                                     </div>
                                 ))}
-                                <div className="h-20 w-full"></div>
                             </div>
                         )}
 
                         {tab === 'logs' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Bitácora Eureka</h2>
                                 <div className="glass-card p-6 space-y-4">
                                     <textarea value={noteIn} onChange={e => setNoteIn(e.target.value)} placeholder="Captura un pensamiento profundo..." className="w-full bg-transparent text-sm text-slate-400 outline-none h-20 resize-none border-b border-white/5 pb-2" />
@@ -286,12 +284,11 @@
                                         </div>
                                     ))}
                                 </div>
-                                <div className="h-20 w-full"></div>
                             </div>
                         )}
 
                         {tab === 'bio' && (
-                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-48">
+                            <div className="space-y-6 animate-in max-w-sm mx-auto px-2 pb-72">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] opacity-30">Perfil Bio-Neural</h2>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="glass-card p-6 flex flex-col items-center"><span className="text-[9px] font-bold text-slate-600 uppercase mb-2">Cronotipo</span><span className="text-sm font-bold">Búho</span></div>
@@ -306,20 +303,19 @@
                                         <li>• Ducha tibia 2h antes de dormir.</li>
                                     </ul>
                                 </div>
-                                <div className="h-20 w-full"></div>
                             </div>
                         )}
                     </main>
 
-                    {/* Controlador Flotante - Elevado ligeramente para no pisar la nav */}
-                    <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-fit bg-[#0f172a]/80 backdrop-blur-3xl border border-white/5 rounded-full p-2 flex items-center gap-6 shadow-2xl z-[90] transition-all duration-700 ${isZen && !wake ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}>
-                        <button onClick={(e) => { e.stopPropagation(); setShowMixer(!showMixer); }} className="ml-5 p-2 text-slate-700 hover:text-sky-400 transition-colors"><IconSliders /></button>
+                    {/* Isla de Control Flotante (Capa 90) */}
+                    <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 w-fit bg-[#0f172a]/90 backdrop-blur-3xl border border-white/10 rounded-full p-2 flex items-center gap-6 shadow-2xl z-[90] transition-all duration-700 ${isZen && !wake ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}`}>
+                        <button onClick={(e) => { e.stopPropagation(); setShowMixer(!showMixer); }} className="ml-5 p-2 text-slate-500 hover:text-sky-400 transition-colors"><IconSliders /></button>
                         <button onClick={(e) => { e.stopPropagation(); toggleAudio(); }} className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-white/5 text-white' : 'bg-emerald-500 text-slate-950 active:scale-95 shadow-xl shadow-emerald-500/20'}`}>{isPlaying ? <IconPause /> : <IconPlay />}</button>
                         {!isPlaying && <div className="mr-8"><p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">{current.name}</p></div>}
                     </div>
 
-                    {/* Navbar Principal - Capa 40 */}
-                    <nav className={`fixed bottom-0 left-0 right-0 h-20 bg-slate-950/95 backdrop-blur-3xl border-t border-white/5 flex items-center justify-around px-2 z-40 transition-opacity duration-1000 ${isZen && !wake ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    {/* Navbar Principal (Capa 100) */}
+                    <nav className={`fixed bottom-0 left-0 right-0 h-20 bg-slate-950/95 backdrop-blur-3xl border-t border-white/5 flex items-center justify-around px-2 z-[100] transition-opacity duration-1000 ${isZen && !wake ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                         <button onClick={() => setTab('sync')} className={`flex flex-col items-center gap-1 ${tab === 'sync' ? 'text-sky-500' : 'text-slate-800'}`}><IconZap /><span className="text-[8px] font-bold uppercase text-center w-full">Sync</span></button>
                         <button onClick={() => setTab('paths')} className={`flex flex-col items-center gap-1 ${tab === 'paths' ? 'text-sky-500' : 'text-slate-800'}`}><IconCompass /><span className="text-[8px] font-bold uppercase text-center w-full">Rutas</span></button>
                         <button onClick={() => setTab('labs')} className={`flex flex-col items-center gap-1 ${tab === 'labs' ? 'text-sky-500' : 'text-slate-800'}`}><IconBrain /><span className="text-[8px] font-bold uppercase text-center w-full">Science</span></button>
@@ -327,8 +323,9 @@
                         <button onClick={() => setTab('bio')} className={`flex flex-col items-center gap-1 ${tab === 'bio' ? 'text-sky-500' : 'text-slate-800'}`}><IconUser /><span className="text-[8px] font-bold uppercase text-center w-full">Bio</span></button>
                     </nav>
 
+                    {/* Modal Mixer */}
                     {showMixer && (
-                        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex items-end justify-center p-4" onClick={() => setShowMixer(false)}>
+                        <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-end justify-center p-4" onClick={() => setShowMixer(false)}>
                             <div className="w-full max-w-sm glass-card p-10 space-y-10 animate-in" onClick={e => e.stopPropagation()}>
                                 <div className="flex justify-between items-center"><h3 className="text-[10px] font-bold uppercase text-sky-500 tracking-[0.5em]">Neural Mixer</h3><div onClick={() => setShowMixer(false)} className="text-slate-700 cursor-pointer"><IconX /></div></div>
                                 <div className="space-y-10">
